@@ -1,91 +1,94 @@
-from schemas import UserCreate, ProductCreate, OrderCreate, OrderItemCreate
-from models import User, Product, Order, OrderItem
+from schemas import UserCreate, ProductCreate
 from database import get_db
+from fastapi import Depends
+from models import User, Product
 from sqlalchemy import select
 from fastapi import HTTPException
-from auth import verify_password
-from schemas import OrderItemCreate
-from models import OrderItem
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
 
-async def create_user(user: UserCreate):
-    db = next(get_db())
+
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     db.add(User(**user.model_dump()))
     await db.commit()
-    return user 
-
-async def get_user(user_id: int):
-    db = next(get_db())
-    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
+async def get_user(email: str, db: AsyncSession = Depends(get_db)):
+    user = await db.execute(select(User).where(User.email == email)) 
+    print('user',user)
+    result=user.scalar_one_or_none()
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+    return result
 
-async def create_product(product: ProductCreate):
-    db = next(get_db())
+
+async def create_product(product: ProductCreate, db: AsyncSession = Depends(get_db)):
     db.add(Product(**product.model_dump()))
     await db.commit()
     return product
 
-async def get_products():
-    db = next(get_db())
-    products = db.execute(select(Product)).scalars().all()
-    return products
+async def get_products(db: AsyncSession = Depends(get_db)):
+    products = await db.execute(select(Product))
+    result = products.scalars().all()
+    if not result:
+        raise HTTPException(status_code=404, detail="Products not found")
+    return result
 
-async def get_product(product_id: int):
-    db = next(get_db())
-    product = db.execute(select(Product).where(Product.id == product_id)).scalar_one_or_none()
-    if not product:
+async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
+    product = await db.execute(select(Product).where(Product.id == product_id))
+    result = product.scalar_one_or_none()
+    if not result:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    return result
 
 
-async def create_order(order: OrderCreate):
-    db = next(get_db())
+
+async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
+
     db.add(Order(**order.model_dump()))
     await db.commit()
     return order
 
-async def get_orders(user_id: int):
-    db = next(get_db())
+async def get_orders(user_id: int, db: AsyncSession = Depends(get_db)):
+
     orders = db.execute(select(Order).where(Order.user_id == user_id)).scalars().all()
     return orders
 
-async def get_order(order_id: int):
-    db = next(get_db())
+async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
+
     order = db.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
 
-async def create_order_item(order_item: OrderItemCreate):
-    db = next(get_db())
+async def create_order_item(order_item: OrderItemCreate, db: AsyncSession = Depends(get_db)):
+
     db.add(OrderItem(**order_item.model_dump()))
     await db.commit()
     return order_item
 
-async def get_order_items(order_id: int):
-    db = next(get_db())
+async def get_order_items(order_id: int, db: AsyncSession = Depends(get_db)):
+
     order_items = db.execute(select(OrderItem).where(OrderItem.order_id == order_id)).scalars().all()
     return order_items
 
-async def get_order_item(order_item_id: int):
-    db = next(get_db())
+async def get_order_item(order_item_id: int, db: AsyncSession = Depends(get_db)):
+
     order_item = db.execute(select(OrderItem).where(OrderItem.id == order_item_id)).scalar_one_or_none()
     if not order_item:
         raise HTTPException(status_code=404, detail="Order item not found")
     return order_item
 
-async def get_user(user_id: int):
-    db = next(get_db())
-    user = db.execute(select(User).where(User.email == user.email)).scalar_one_or_none()
+async def get_user(user_id: int, db: Depends(get_db)):
+        
+    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
     if not user or not verify_password(user.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return user
 
 
-async def calculate_discount(user_id: int, items: list[OrderItemCreate]):
+async def calculate_discount(user_id: int, items: list[OrderItemCreate], db: AsyncSession = Depends(get_db)):
     discount_response = DiscountResponse()
     total_items = len(items)
     total_quantity = sum(item.quantity for item in items)
@@ -109,7 +112,7 @@ async def calculate_discount(user_id: int, items: list[OrderItemCreate]):
         value_bonus += 12
         
     if user_id:
-        buyer = get_user(user_id)
+        buyer = await get_user(user_id, db=db)
         if buyer.previous_orders >= 1:
             loyalty_bonus += 2
         elif buyer.previous_orders >= 4:
@@ -125,3 +128,4 @@ async def calculate_discount(user_id: int, items: list[OrderItemCreate]):
         "value_bonus": value_bonus,
         "loyalty_bonus": loyalty_bonus
     }
+

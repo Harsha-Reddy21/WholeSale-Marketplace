@@ -1,25 +1,22 @@
 from pydantic import BaseModel
+from enum import Enum
 from datetime import datetime
 
+class UserType(Enum):
+    VENDOR = "VENDOR"
+    BUYER = "BUYER"
 
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    user_type: UserType
+    company_name: str
 
 
 class UserLogin(BaseModel):
     email: str
     password: str
-
-class UserCreate(BaseModel):
-    username: str
-    email: str
-    user_type: str
-    company_name: str
-    password: str
-
-
-class UserResponse(BaseModel):
-    id: int
-    created_at: datetime
-
 
 
 class ProductBase(BaseModel):
@@ -30,28 +27,24 @@ class ProductBase(BaseModel):
     created_at: datetime
 
 class ProductCreate(ProductBase):
-    pass 
+    pass
 
 class ProductResponse(ProductBase):
     id: int
     created_at: datetime
 
-
 class OrderBase(BaseModel):
-    id: int 
     user_id: int
     total_amount: float
-    created_at: datetime
 
 class OrderCreate(OrderBase):
-    pass 
+    pass
 
 class OrderResponse(OrderBase):
     id: int
     created_at: datetime
 
 class OrderItemBase(BaseModel):
-    id: int
     order_id: int
     product_id: int
     quantity: int
@@ -59,13 +52,12 @@ class OrderItemBase(BaseModel):
     subtotal: float
 
 class OrderItemCreate(OrderItemBase):
-    pass 
+    pass
 
 class OrderItemResponse(OrderItemBase):
     id: int
     created_at: datetime
     subtotal: float
-
 
 class DiscountResponse(BaseModel):
     total_quantity: int
@@ -74,4 +66,3 @@ class DiscountResponse(BaseModel):
     discount_amount: float
     final_amount: float
     breakdown: dict
-

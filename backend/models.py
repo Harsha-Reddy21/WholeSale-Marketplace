@@ -1,8 +1,10 @@
 from database import Base
+from sqlalchemy import Enum
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from datetime import datetime
-
-
+from schemas import UserType
 
 
 class User(Base):
@@ -11,9 +13,10 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     password = Column(String)
-    user_type = Column(String)
-    company_name = Column(String)
+    user_type = Column(Enum(UserType))
+    company_name = Column(String, nullable=True, default=None)
     created_at = Column(DateTime, default=datetime.now)
+
 
 
 class Product(Base):
