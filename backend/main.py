@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from database import create_tables
 import uvicorn
+from routers import auth, products, orders
 
 
 app = FastAPI(title='WholeSale-Marketplace', description='A whole sale marketplace for vendors and buyers')
@@ -15,9 +16,9 @@ async def health():
     return {"status": "Server is running at port 8000"}
 
 
-# app.include_router(auth.router)
-# app.include_router(products.router)
-# app.include_router(orders.router)
+app.include_router(auth.router)
+app.include_router(products.router)
+app.include_router(orders.router)
 
 
 if __name__ == "__main__":

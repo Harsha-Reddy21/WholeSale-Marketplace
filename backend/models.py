@@ -34,7 +34,7 @@ class Order(Base):
     created_at = Column(DateTime, default=datetime.now)
 
 
-class order_items(Base):
+class OrderItem(Base):
     __tablename__ = "order_items"
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"))

@@ -1,19 +1,5 @@
+from auth import hash_password, verify_password, create_access_token
 
 
-# POST /auth/register - Register user
-# POST /auth/login - Login with JWT
+from schemas import UserCreate, UserLogin
 
-from fastapi import APIRouter
-from schemas import User
-
-
-router = APIRouter(prefix="/auth", tags=["auth"])
-
-@router.post("/register")
-async def register(user: User):
-    pass 
-
-
-@router.post("/login")
-async def login(user: User):
-    pass 

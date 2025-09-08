@@ -4,18 +4,19 @@ from datetime import datetime
 
 
 
-class UserBase(BaseModel):
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserCreate(BaseModel):
     username: str
     email: str
     user_type: str
     company_name: str
-
-
-class UserCreate(UserBase):
     password: str
 
 
-class UserResponse(UserBase):
+class UserResponse(BaseModel):
     id: int
     created_at: datetime
 
@@ -64,3 +65,4 @@ class OrderItemResponse(OrderItemBase):
     id: int
     created_at: datetime
     subtotal: float
+
