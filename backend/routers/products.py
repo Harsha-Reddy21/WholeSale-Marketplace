@@ -15,13 +15,13 @@ async def create_product(product: ProductCreate, db: AsyncSession = Depends(get_
     return await create_product(product, db=db)
 
 @router.get("/")   
-async def get_products(db: AsyncSession = Depends(get_db)):
-    return await get_products(db=db)
+async def get_products():
+    return await get_products()
     
 
 @router.get("/{product_id}")
-async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
-    return get_product(product_id, db=db)
+async def get_product(product_id: int):
+    return get_product(product_id)
     
     
     
