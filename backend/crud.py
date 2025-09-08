@@ -1,16 +1,11 @@
 from schemas import UserCreate, ProductCreate, OrderCreate, OrderItemCreate
 from models import User, Product, Order, OrderItem
 from database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-from auth import hash_password
-from discount import calculate_discount
 from fastapi import HTTPException
 from auth import verify_password
-from schemas import UserLogin
-from schemas import CartCreate, OrderItemCreate, UserCreate
-from models import Cart, OrderItem
+from schemas import OrderItemCreate
+from models import OrderItem
 
 async def create_user(user: UserCreate):
     db = next(get_db())
@@ -45,9 +40,6 @@ async def get_product(product_id: int):
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
-async def calculate_discount_for_cart(cart: CartCreate):
-    discount = calculate_discount(cart.buyer_id, cart.total_quantity, cart.total_value)
-    return discount
 
 async def create_order(order: OrderCreate):
     db = next(get_db())
@@ -91,3 +83,45 @@ async def get_user(user_id: int):
     if not user or not verify_password(user.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return user
+
+
+async def calculate_discount(user_id: int, items: list[OrderItemCreate]) -> DiscountResponse:
+    discount_response = DiscountResponse()
+    total_items = len(items)
+    total_quantity = sum(item.quantity for item in items)
+    total_value = sum(item.quantity * item.price for item in items)
+    quantity_bonus = 0
+    value_bonus = 0
+    loyalty_bonus = 0
+ 
+    if total_quantity >= 100:
+        quantity_bonus += 5
+    elif total_quantity >= 500:
+        quantity_bonus += 10
+    elif total_quantity >= 1000:
+        quantity_bonus += 15
+    
+    if total_value  >= 1000:
+        value_bonus += 3
+    elif total_value >= 5000:
+        value_bonus += 7
+    elif total_value >= 10000:
+        value_bonus += 12
+        
+    if user_id:
+        buyer = get_user(user_id)
+        if buyer.previous_orders >= 1:
+            loyalty_bonus += 2
+        elif buyer.previous_orders >= 4:
+            loyalty_bonus += 5
+    
+    discount_percent = max(quantity_bonus+ value_bonus+ loyalty_bonus, 25)
+    discount_amount = total_value * discount_percent / 100
+    final_amount = total_value - discount_amount
+    return DiscountResponse(total_quantity=total_quantity, total_value=total_value, discount_percent=discount_percent, discount_amount=discount_amount, final_amount=final_amount, breakdown=breakdown)
+   
+    breakdown = {
+        "quantity_bonus": quantity_bonus,
+        "value_bonus": value_bonus,
+        "loyalty_bonus": loyalty_bonus
+    }

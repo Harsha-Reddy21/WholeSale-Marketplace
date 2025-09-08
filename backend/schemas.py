@@ -66,3 +66,12 @@ class OrderItemResponse(OrderItemBase):
     created_at: datetime
     subtotal: float
 
+
+class DiscountResponse(BaseModel):
+    total_quantity: int
+    total_value: float
+    discount_percent: float
+    discount_amount: float
+    final_amount: float
+    breakdown: dict
+
