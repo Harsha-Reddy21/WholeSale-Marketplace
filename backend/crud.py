@@ -85,7 +85,7 @@ async def get_user(user_id: int):
     return user
 
 
-async def calculate_discount(user_id: int, items: list[OrderItemCreate]) -> DiscountResponse:
+async def calculate_discount(user_id: int, items: list[OrderItemCreate]):
     discount_response = DiscountResponse()
     total_items = len(items)
     total_quantity = sum(item.quantity for item in items)
