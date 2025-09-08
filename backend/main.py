@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import uvicorn
 from database import create_tables,Base
-from routers import auth, products
+from routers import auth, products, orders
 app = FastAPI(title="WholeSale-Marketplace", description="A whole sale marketplace for vendors and buyers")
 
 
@@ -19,6 +19,7 @@ async def startup_event():
 
 app.include_router(auth.router)
 app.include_router(products.router)
+app.include_router(orders.router)
 
 
 if __name__ == "__main__":

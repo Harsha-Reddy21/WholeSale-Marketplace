@@ -20,7 +20,10 @@ Base = declarative_base()
 
 async def get_db():
     async with async_sessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()
 
 
 async def create_tables():

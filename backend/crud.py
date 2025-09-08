@@ -1,7 +1,7 @@
-from schemas import UserCreate, ProductCreate
+from schemas import UserCreate, ProductCreate, OrderCreate, OrderItemCreate, DiscountResponse
 from database import get_db
 from fastapi import Depends
-from models import User, Product
+from models import User, Product, Order, OrderItem
 from sqlalchemy import select
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,9 +28,12 @@ async def create_product(product: ProductCreate, db: AsyncSession = Depends(get_
     await db.commit()
     return product
 
-async def get_products(db: AsyncSession = Depends(get_db)):
+
+
+async def get_products(db:AsyncSession=Depends(get_db)):
     products = await db.execute(select(Product))
     result = products.scalars().all()
+    print('result',result)
     if not result:
         raise HTTPException(status_code=404, detail="Products not found")
     return result
@@ -52,7 +55,9 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
 
 async def get_orders(user_id: int, db: AsyncSession = Depends(get_db)):
 
-    orders = db.execute(select(Order).where(Order.user_id == user_id)).scalars().all()
+    orders = await db.execute(select(Order).where(Order.user_id == user_id))
+    result = orders.scalars().all()
+    print('orders',orders)
     return orders
 
 async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
@@ -79,13 +84,6 @@ async def get_order_item(order_item_id: int, db: AsyncSession = Depends(get_db))
     if not order_item:
         raise HTTPException(status_code=404, detail="Order item not found")
     return order_item
-
-async def get_user(user_id: int, db: Depends(get_db)):
-        
-    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
-    if not user or not verify_password(user.password, user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    return user
 
 
 async def calculate_discount(user_id: int, items: list[OrderItemCreate], db: AsyncSession = Depends(get_db)):
