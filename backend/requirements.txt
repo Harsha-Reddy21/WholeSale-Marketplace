@@ -4,6 +4,7 @@ python-dotenv
 psycopg2-binary
 python-jose[cryptography]
 python-multipart
-python-dateutil
-python-json-logger
-python-json-logger
+psycopg2
+sqlalchemy
+passlib
+aiosqlite
